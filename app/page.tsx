@@ -1,65 +1,100 @@
-import Image from "next/image";
+'use client'
+
+import { Suspense } from 'react'
+import ChatWidget from '@/components/ChatWidget'
+import { WidgetConfig } from '@/types'
+
+// Loading fallback
+function LoadingWidget() {
+  return (
+    <div style={styles.container}>
+      <div style={styles.loadingWidget}>
+        <div style={styles.loadingSpinner}></div>
+        <p style={styles.loadingText}>Loading chat widget...</p>
+      </div>
+    </div>
+  )
+}
 
 export default function Home() {
+  const widgetConfig: WidgetConfig = {
+    title: 'RICA',
+    subtitle: 'AI Assistant',
+    primaryColor: '#2563eb',
+    secondaryColor: '#10b981',
+    initialMessage: "Hello! I'm RICA, your AI assistant. How can I help you today?",
+    placeholder: "Ask me anything...",
+  }
+
+  const handleMessageSent = (message: string) => {
+    console.log('Message sent:', message)
+    // You can add analytics or other side effects here
+  }
+
+  const handleWidgetClose = () => {
+    console.log('Widget closed')
+    // Handle widget close logic
+    if (typeof window !== 'undefined') {
+      window.parent.postMessage({ type: 'WIDGET_CLOSED' }, '*')
+    }
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <Suspense fallback={<LoadingWidget />}>
+      <div style={styles.container}>
+        <ChatWidget 
+          config={widgetConfig}
+          onMessageSent={handleMessageSent}
+          onWidgetClose={handleWidgetClose}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+      </div>
+    </Suspense>
+  )
+}
+
+const styles = {
+  container: {
+    minHeight: '100vh',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+    padding: '2px',
+  } as const,
+  loadingWidget: {
+    width: '400px',
+    height: '600px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'white',
+    borderRadius: '5px',
+    boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+  } as const,
+  loadingSpinner: {
+    width: '40px',
+    height: '40px',
+    border: '3px solid #e5e7eb',
+    borderTop: '3px solid #2563eb',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+  } as const,
+  loadingText: {
+    marginTop: '16px',
+    color: '#6b7280',
+    fontSize: '14px',
+  } as const,
+}
+
+// Add spinner animation
+if (typeof document !== 'undefined') {
+  const styleSheet = document.createElement('style')
+  styleSheet.textContent = `
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  `
+  document.head.appendChild(styleSheet)
 }
